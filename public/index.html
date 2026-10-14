@@ -1,0 +1,513 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>จองคิวศูนย์ฟื้นฟูสมรรถภาพทางด้านวิทยาศาสตร์การกีฬาเคลื่อนที่</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+  :root {
+    --navy: #0b2a4a;
+    --navy-dark: #081d35;
+    --gold: #d4a53a;
+    --bg: #f4f6f9;
+    --card: #ffffff;
+    --line: #e2e6ec;
+    --text: #1b2430;
+    --muted: #65707e;
+    --ok: #1e8e5a;
+    --danger: #c0392b;
+    --radius: 14px;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: "TH SarabunPSK", "Sarabun", system-ui, -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 18px;
+  }
+  header {
+    background: linear-gradient(135deg, var(--navy), var(--navy-dark));
+    color: #fff;
+    padding: 20px 16px 28px;
+    text-align: center;
+  }
+  header h1 { margin: 0 0 4px; font-size: 24px; }
+  header p { margin: 2px 0; opacity: .9; font-size: 16px; }
+  .wrap { max-width: 980px; margin: -18px auto 40px; padding: 0 14px; }
+  .card {
+    background: var(--card);
+    border-radius: var(--radius);
+    box-shadow: 0 4px 18px rgba(10,30,60,.08);
+    padding: 18px;
+    margin-bottom: 16px;
+  }
+  .tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
+  .tabs button {
+    border: 1px solid var(--line);
+    background: #fff;
+    padding: 8px 14px;
+    border-radius: 999px;
+    cursor: pointer;
+    font-size: 16px;
+    font-family: inherit;
+  }
+  .tabs button.active { background: var(--navy); color: #fff; border-color: var(--navy); }
+  .pill-grid { display: flex; flex-wrap: wrap; gap: 8px; }
+  .pill {
+    border: 1px solid var(--line);
+    padding: 10px 14px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 16px;
+    background: #fafbfc;
+  }
+  .pill small { display: block; color: var(--muted); font-size: 13px; }
+  .pill.active { background: var(--navy); color: #fff; border-color: var(--navy); }
+  .date-row { display: flex; gap: 8px; flex-wrap: wrap; margin: 10px 0 16px; }
+  .date-btn {
+    border: 1px solid var(--line);
+    background: #fff;
+    padding: 8px 12px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 15px;
+  }
+  .date-btn.active { background: var(--gold); color: #1b2430; border-color: var(--gold); font-weight: 700; }
+  .slot-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px,1fr)); gap: 8px; }
+  .slot {
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 10px 6px;
+    text-align: center;
+    cursor: pointer;
+    background: #fff;
+    font-size: 15px;
+  }
+  .light-bar { display: flex; gap: 3px; justify-content: center; margin-top: 6px; }
+  .light-bar i {
+    width: 9px; height: 9px; border-radius: 2px; background: #dfe4ea; display: inline-block;
+  }
+  .light-bar i.lit { background: var(--ok); }
+  .slot.full .light-bar i.lit { background: var(--danger); }
+  .slot.full { background: #fdeceb; color: #9b3d33; cursor: not-allowed; opacity: .75; }
+  .slot:hover:not(.full) { border-color: var(--navy); }
+  .slot.selected { background: var(--navy); color: #fff; border-color: var(--navy); }
+  .slot.selected .cap { color: #cfe0f0; }
+  .select-bar {
+    position: sticky; bottom: 12px; display: flex; justify-content: space-between; align-items: center;
+    background: var(--navy); color: #fff; padding: 12px 16px; border-radius: 12px; margin-top: 14px;
+    box-shadow: 0 6px 18px rgba(10,30,60,.25);
+  }
+  .select-bar span { font-size: 15px; }
+  .modal-bg {
+    position: fixed; inset: 0; background: rgba(10,20,35,.5);
+    display: flex; align-items: center; justify-content: center; padding: 16px; z-index: 50;
+  }
+  .modal {
+    background: #fff; border-radius: var(--radius); padding: 20px; max-width: 420px; width: 100%;
+    max-height: 90vh; overflow: auto;
+  }
+  .modal h3 { margin-top: 0; }
+  label { display: block; margin: 10px 0 4px; font-weight: 600; font-size: 15px; }
+  input[type=text], input[type=tel], select, textarea {
+    width: 100%; padding: 10px; border: 1px solid var(--line); border-radius: 8px;
+    font-size: 16px; font-family: inherit;
+  }
+  .radio-row { display: flex; gap: 16px; }
+  .radio-row label { display: flex; align-items: center; gap: 6px; font-weight: 400; }
+  .btn {
+    display: inline-block; border: none; border-radius: 8px; padding: 10px 18px;
+    font-size: 16px; cursor: pointer; font-family: inherit;
+  }
+  .btn-primary { background: var(--navy); color: #fff; }
+  .btn-outline { background: #fff; border: 1px solid var(--line); }
+  .btn-danger { background: var(--danger); color: #fff; }
+  .actions { display: flex; gap: 10px; margin-top: 16px; justify-content: flex-end; }
+  #connErrorBanner {
+    display: none; background: #fdeceb; border: 1px solid #f2b8b1; color: #9b3d33;
+    padding: 10px 14px; border-radius: 10px; margin-bottom: 14px; font-size: 15px;
+  }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th, td { border: 1px solid var(--line); padding: 6px 8px; text-align: left; }
+  th { background: #f0f3f7; }
+  .muted { color: var(--muted); font-size: 14px; }
+  .toast {
+    position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+    background: var(--navy); color: #fff; padding: 10px 20px; border-radius: 10px;
+    z-index: 80; font-size: 15px;
+  }
+  .restrict-note {
+    background: #fff7e6; border: 1px solid #f0d9a0; color: #7a5a10;
+    padding: 8px 12px; border-radius: 8px; font-size: 14px; margin-bottom: 10px;
+  }
+  .admin-login { max-width: 320px; margin: 60px auto; text-align: center; }
+  @media (max-width: 480px) { body { font-size: 16px; } header h1 { font-size: 20px; } }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>ศูนย์ฟื้นฟูสมรรถภาพทางด้านวิทยาศาสตร์การกีฬาเคลื่อนที่</h1>
+  <p>การแข่งขันกีฬามหาวิทยาลัยแห่งประเทศไทย ครั้งที่ 52 รอบคัดเลือก เขตภาคกลาง</p>
+  <p>18–23 ตุลาคม 2569 · เวลา 08:00–20:00 น.</p>
+</header>
+
+<div class="wrap">
+  <div id="connErrorBanner"></div>
+  <div class="tabs">
+    <button id="tabBook" class="active">จองคิว</button>
+    <button id="tabAdmin">ผู้ดูแลระบบ</button>
+  </div>
+
+  <div id="bookView"></div>
+  <div id="adminView" style="display:none;"></div>
+</div>
+
+<script>
+const API = "/api/bookings";
+let META = null;
+let selectedServiceId = null;
+let selectedDate = null;
+let selectedSlots = new Set();
+let bookingsCache = [];
+let adminAuthed = false;
+const ADMIN_PASSCODE = "2569";
+
+function showConnError(msg) {
+  const el = document.getElementById("connErrorBanner");
+  el.style.display = "block";
+  el.textContent = "เกิดปัญหาการเชื่อมต่อระบบ: " + msg;
+}
+function clearConnError() {
+  document.getElementById("connErrorBanner").style.display = "none";
+}
+
+async function api(action, payload) {
+  try {
+    const res = await fetch(API, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ action, ...payload }),
+    });
+    const data = await res.json();
+    if (!data.ok && data.stage) {
+      showConnError(`[${data.stage}] ${data.error}`);
+    } else {
+      clearConnError();
+    }
+    return data;
+  } catch (e) {
+    showConnError(e.message);
+    return { ok: false, err: "network" };
+  }
+}
+
+function toast(msg) {
+  const t = document.createElement("div");
+  t.className = "toast";
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 2500);
+}
+
+async function loadMeta() {
+  const data = await api("meta", {});
+  if (data.ok) {
+    META = data;
+    selectedServiceId = META.services[0].id;
+    selectedDate = META.dates[0].iso;
+  }
+}
+
+async function loadBookings() {
+  const data = await api("listAll", {});
+  if (data.ok) bookingsCache = data.bookings;
+}
+
+function slotsForService(svc) {
+  const out = [];
+  for (let t = META.openMin; t + svc.durationMin <= META.closeMin; t += svc.durationMin) {
+    const pad = n => String(n).padStart(2, "0");
+    const hh1 = pad(Math.floor(t/60)), mm1 = pad(t%60);
+    const end = t + svc.durationMin;
+    const hh2 = pad(Math.floor(end/60)), mm2 = pad(end%60);
+    out.push({ id: `${svc.id}-${t}`, startMin: t, endMin: end, label: `${hh1}:${mm1}-${hh2}:${mm2}` });
+  }
+  return out;
+}
+
+function countFor(date, slotId) {
+  return bookingsCache.filter(b => b.date === date && b.slotId === slotId).length;
+}
+
+function renderServicePills() {
+  return `<div class="pill-grid">` + META.services.map(s => `
+    <div class="pill ${s.id===selectedServiceId?'active':''}" data-svc="${s.id}">
+      ${s.name}<small>รองรับ ${s.capacity} คิว/รอบ · ${s.durationMin} นาที${s.advanceMin ? ' · จองล่วงหน้า ≥'+s.advanceMin+' นาที' : ''}</small>
+    </div>`).join("") + `</div>`;
+}
+
+function renderDateRow() {
+  return `<div class="date-row">` + META.dates.map(d => `
+    <button class="date-btn ${d.iso===selectedDate?'active':''}" data-date="${d.iso}">${d.label}</button>
+  `).join("") + `</div>`;
+}
+
+function renderSlots() {
+  const svc = META.services.find(s => s.id === selectedServiceId);
+  const slots = slotsForService(svc);
+  return `<div class="slot-grid">` + slots.map(sl => {
+    const used = countFor(selectedDate, sl.id);
+    const full = used >= svc.capacity;
+    const picked = selectedSlots.has(sl.id);
+    const lights = Array.from({ length: svc.capacity }, (_, i) =>
+      `<i class="${i < used ? 'lit' : ''}"></i>`
+    ).join("");
+    return `<div class="slot ${full?'full':''} ${picked?'selected':''}" data-slot="${sl.id}" data-start="${sl.startMin}">
+      <div>${sl.label}</div>
+      <div class="light-bar">${lights}</div>
+    </div>`;
+  }).join("") + `</div>`;
+}
+
+function renderBookView() {
+  const el = document.getElementById("bookView");
+  const n = selectedSlots.size;
+  el.innerHTML = `
+    <div class="card">
+      <h3 style="margin-top:0;">1. เลือกบริการ</h3>
+      ${renderServicePills()}
+    </div>
+    <div class="card">
+      <h3 style="margin-top:0;">2. เลือกวันที่</h3>
+      ${renderDateRow()}
+      <h3>3. เลือกช่วงเวลา (เลือกได้หลายช่วง)</h3>
+      ${renderSlots()}
+      ${n > 0 ? `
+        <div class="select-bar">
+          <span>เลือกแล้ว ${n} ช่วงเวลา</span>
+          <div>
+            <button class="btn btn-outline" id="btnClearSel" style="margin-right:8px;">ล้างที่เลือก</button>
+            <button class="btn btn-primary" id="btnBookSel">จองคิวที่เลือก (${n})</button>
+          </div>
+        </div>
+      ` : ""}
+    </div>
+  `;
+  el.querySelectorAll("[data-svc]").forEach(p => p.onclick = () => { selectedServiceId = p.dataset.svc; selectedSlots.clear(); renderBookView(); });
+  el.querySelectorAll("[data-date]").forEach(b => b.onclick = () => { selectedDate = b.dataset.date; selectedSlots.clear(); renderBookView(); });
+  el.querySelectorAll("[data-slot]").forEach(s => {
+    if (s.classList.contains("full")) return;
+    s.onclick = () => {
+      const id = s.dataset.slot;
+      if (selectedSlots.has(id)) selectedSlots.delete(id);
+      else selectedSlots.add(id);
+      renderBookView();
+    };
+  });
+  const clearBtn = document.getElementById("btnClearSel");
+  if (clearBtn) clearBtn.onclick = () => { selectedSlots.clear(); renderBookView(); };
+  const bookBtn = document.getElementById("btnBookSel");
+  if (bookBtn) bookBtn.onclick = () => openBookingModal(Array.from(selectedSlots));
+}
+
+function openBookingModal(slotIds) {
+  const svc = META.services.find(s => s.id === selectedServiceId);
+  const slots = slotsForService(svc);
+  const chosen = slotIds.map(id => slots.find(sl => sl.id === id)).filter(Boolean);
+
+  const bg = document.createElement("div");
+  bg.className = "modal-bg";
+  bg.innerHTML = `
+    <div class="modal">
+      <h3>จองคิว: ${svc.name}</h3>
+      <p class="muted">${selectedDate} · ${chosen.map(sl => sl.label).join(", ")}</p>
+      <p class="muted">รวม ${chosen.length} ช่วงเวลา (ใช้ข้อมูลผู้จองชุดเดียวกันสำหรับทุกช่วงที่เลือก)</p>
+      ${svc.advanceMin ? `<div class="restrict-note">บริการนี้ต้องจองล่วงหน้าอย่างน้อย ${svc.advanceMin} นาทีก่อนถึงเวลา</div>` : ""}
+      <label>ชื่อ-สกุล</label>
+      <input type="text" id="fName" />
+      <label>สถานะ</label>
+      <div class="radio-row">
+        ${META.statusOptions.map(o => `<label><input type="radio" name="fStatus" value="${o}" ${o===META.statusOptions[0]?'checked':''}/> ${o}</label>`).join("")}
+      </div>
+      <label>ชนิดกีฬา</label>
+      <select id="fSport">
+        ${META.sportTypes.map(t => `<option value="${t}">${t}</option>`).join("")}
+      </select>
+      <label>เบอร์โทรศัพท์</label>
+      <input type="tel" id="fPhone" />
+      <label>หมายเหตุ <span style="font-weight:400; color:var(--muted); font-size:13px;">(ระบุจำนวนนักกีฬาที่เข้ารับบริการ และมีอาการบาดเจ็บหรือไม่)</span></label>
+      <textarea id="fNote" rows="2" placeholder="เช่น นักกีฬา 3 คน ไม่มีอาการบาดเจ็บ / นักกีฬา 1 คน มีอาการเจ็บข้อเท้า"></textarea>
+      <div class="actions">
+        <button class="btn btn-outline" id="btnCancel">ยกเลิก</button>
+        <button class="btn btn-primary" id="btnConfirm">ยืนยันจอง</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(bg);
+  bg.querySelector("#btnCancel").onclick = () => bg.remove();
+
+  bg.querySelector("#btnConfirm").onclick = async () => {
+    const name = bg.querySelector("#fName").value.trim();
+    const status = bg.querySelector('input[name="fStatus"]:checked')?.value;
+    const sportType = bg.querySelector("#fSport").value;
+    const phone = bg.querySelector("#fPhone").value.trim();
+    const note = bg.querySelector("#fNote").value.trim();
+
+    if (!name || !phone) { toast("กรุณากรอกชื่อและเบอร์โทรศัพท์"); return; }
+
+    let okCount = 0;
+    const failedLabels = [];
+    for (const sl of chosen) {
+      const res = await api("create", {
+        date: selectedDate,
+        slotId: sl.id,
+        serviceId: svc.id,
+        fields: { name, status, sportType, phone, note },
+      });
+      if (res.ok) {
+        okCount++;
+      } else if (res.err === "slot_full") {
+        failedLabels.push(`${sl.label} (เต็มแล้ว)`);
+      } else if (res.err === "too_late") {
+        failedLabels.push(`${sl.label} (ต้องจองล่วงหน้า ≥${res.advanceMin} นาที)`);
+      } else if (res.err) {
+        failedLabels.push(`${sl.label} (${res.err})`);
+      }
+    }
+
+    await loadBookings();
+    if (okCount > 0) selectedSlots.clear();
+    renderBookView();
+    bg.remove();
+
+    if (failedLabels.length === 0) {
+      toast(`จองคิวสำเร็จ ${okCount} ช่วงเวลา`);
+    } else if (okCount > 0) {
+      toast(`จองสำเร็จ ${okCount} ช่วง · ไม่สำเร็จ: ${failedLabels.join(", ")}`);
+    } else {
+      toast(`จองไม่สำเร็จ: ${failedLabels.join(", ")}`);
+    }
+  };
+}
+
+// ===================== ADMIN =====================
+function renderAdminView() {
+  const el = document.getElementById("adminView");
+  if (!adminAuthed) {
+    el.innerHTML = `
+      <div class="admin-login card">
+        <h3>เข้าสู่ระบบผู้ดูแล</h3>
+        <input type="text" id="passInput" placeholder="รหัสผ่าน" />
+        <div class="actions" style="justify-content:center; margin-top:14px;">
+          <button class="btn btn-primary" id="btnLogin">เข้าสู่ระบบ</button>
+        </div>
+      </div>
+    `;
+    el.querySelector("#btnLogin").onclick = () => {
+      if (el.querySelector("#passInput").value === ADMIN_PASSCODE) {
+        adminAuthed = true;
+        renderAdminView();
+      } else {
+        toast("รหัสผ่านไม่ถูกต้อง");
+      }
+    };
+    return;
+  }
+
+  const rows = [...bookingsCache].sort((a,b) => {
+    if (a.date !== b.date) return a.date.localeCompare(b.date);
+    return (a.startMin ?? 0) - (b.startMin ?? 0);
+  });
+  el.innerHTML = `
+    <div class="card">
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+        <h3 style="margin:0;">ภาพรวมการจองทั้งหมด (${rows.length} รายการ)</h3>
+        <div>
+          <button class="btn btn-outline" id="btnRefresh">รีเฟรช</button>
+          <button class="btn btn-outline" id="btnDiag">ตรวจสอบระบบ</button>
+          <button class="btn btn-primary" id="btnExport">ส่งออก Excel</button>
+        </div>
+      </div>
+      <div style="overflow:auto; margin-top:14px;">
+        <table>
+          <thead><tr>
+            <th>บริการ</th><th>วันที่</th><th>เวลา</th><th>ชื่อ</th><th>สถานะ</th>
+            <th>ชนิดกีฬา</th><th>เบอร์โทร</th><th>ทีมผู้ให้บริการ</th><th>หมายเหตุ</th><th></th>
+          </tr></thead>
+          <tbody>
+            ${rows.map(b => `
+              <tr>
+                <td>${b.serviceName}</td>
+                <td>${b.date}</td>
+                <td>${b.slotLabel}</td>
+                <td>${b.name}</td>
+                <td>${b.status}</td>
+                <td>${b.sportType}</td>
+                <td>${b.phone}</td>
+                <td>${b.providerTeam}</td>
+                <td>${b.note||""}</td>
+                <td><button class="btn btn-danger" data-cancel="${b.key}" style="padding:4px 10px; font-size:13px;">ยกเลิก</button></td>
+              </tr>
+            `).join("")}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  `;
+  el.querySelector("#btnRefresh").onclick = async () => { await loadBookings(); renderAdminView(); };
+  el.querySelector("#btnDiag").onclick = async () => {
+    const d = await api("diag", {});
+    toast(d.ok ? `ระบบปกติ · บันทึกทั้งหมด ${d.totalBookings} รายการ` : "ระบบมีปัญหา");
+  };
+  el.querySelector("#btnExport").onclick = () => {
+    const data = rows.map(b => ({
+      "บริการ": b.serviceName, "วันที่": b.date, "เวลา": b.slotLabel, "ชื่อ": b.name,
+      "สถานะ": b.status, "ชนิดกีฬา": b.sportType, "เบอร์โทร": b.phone,
+      "ทีมผู้ให้บริการ": b.providerTeam, "หมายเหตุ": b.note || "",
+    }));
+    const ws = XLSX.utils.json_to_sheet(data);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Bookings");
+    XLSX.writeFile(wb, "university-games-bookings.xlsx");
+  };
+  el.querySelectorAll("[data-cancel]").forEach(btn => {
+    btn.onclick = async () => {
+      if (!confirm("ยืนยันยกเลิกคิวนี้?")) return;
+      await api("cancel", { key: btn.dataset.cancel });
+      await loadBookings();
+      renderAdminView();
+    };
+  });
+}
+
+document.getElementById("tabBook").onclick = () => {
+  document.getElementById("tabBook").classList.add("active");
+  document.getElementById("tabAdmin").classList.remove("active");
+  document.getElementById("bookView").style.display = "";
+  document.getElementById("adminView").style.display = "none";
+};
+document.getElementById("tabAdmin").onclick = async () => {
+  document.getElementById("tabAdmin").classList.add("active");
+  document.getElementById("tabBook").classList.remove("active");
+  document.getElementById("bookView").style.display = "none";
+  document.getElementById("adminView").style.display = "";
+  await loadBookings();
+  renderAdminView();
+};
+
+(async function init() {
+  await loadMeta();
+  await loadBookings();
+  renderBookView();
+  setInterval(async () => {
+    await loadBookings();
+    if (document.getElementById("bookView").style.display !== "none") renderBookView();
+    else renderAdminView();
+  }, 30000);
+})();
+</script>
+</body>
+</html>
